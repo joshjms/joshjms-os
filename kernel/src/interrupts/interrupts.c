@@ -51,14 +51,14 @@ void IRQ_register_handler(int irq, void (*handler)(struct registers *)) {
 }
 
 void irq_dispatch(struct registers *regs) {
+    if(regs->vector < 32) {
+        exception_handler(regs);
+    }
+
     int irq = regs->vector - 32;
     if (irq_handlers[irq])
         irq_handlers[irq](regs);
     else {
-        serial_print("Unhandled IRQ: ");
-        serial_puthex(irq);
-        serial_putchar('\n');
-
         exception_handler(regs);
     }
     PIC_sendEOI(irq);

@@ -30,6 +30,18 @@
 #define MASTER_OFFSET 0x20
 #define SLAVE_OFFSET 0x28
 
+static void PIC_route_to_apic(void) {
+    /*
+     * If the IMCR is present, route legacy PIC interrupts to the APIC
+     * (virtual-wire mode). This is required on most modern chipsets.
+     */
+    outb(0x22, 0x70);
+    io_wait();
+    uint8_t value = inb(0x23);
+    outb(0x23, value | 0x01);
+    io_wait();
+}
+
 void PIC_sendEOI(uint8_t irq) {
     if(irq >= 8) {
         outb(PIC2_COMMAND, PIC_EOI);
@@ -86,12 +98,51 @@ void IRQ_clear_mask(uint8_t irq_line) {
 }
 
 void PIC_init() {
+    PIC_route_to_apic();
+
     outb(PIC1_DATA, 0xFF);
+    io_wait();
     outb(PIC2_DATA, 0xFF);
+    io_wait();
     PIC_remap(MASTER_OFFSET, SLAVE_OFFSET);
     outb(PIC1_DATA, 0xFF);
+    io_wait();
     outb(PIC2_DATA, 0xFF);
+    io_wait();
+}
 
-    PIC_sendEOI(0);
-    PIC_sendEOI(32);
+uint8_t PIC_get_mask_master(void) {
+    return inb(PIC1_DATA);
+}
+
+uint8_t PIC_get_mask_slave(void) {
+    return inb(PIC2_DATA);
+}
+
+static uint8_t PIC_read_irr(uint16_t command_port) {
+    outb(command_port, 0x0A);
+    io_wait();
+    return inb(command_port);
+}
+
+static uint8_t PIC_read_isr(uint16_t command_port) {
+    outb(command_port, 0x0B);
+    io_wait();
+    return inb(command_port);
+}
+
+uint8_t PIC_read_irr_master(void) {
+    return PIC_read_irr(PIC1_COMMAND);
+}
+
+uint8_t PIC_read_irr_slave(void) {
+    return PIC_read_irr(PIC2_COMMAND);
+}
+
+uint8_t PIC_read_isr_master(void) {
+    return PIC_read_isr(PIC1_COMMAND);
+}
+
+uint8_t PIC_read_isr_slave(void) {
+    return PIC_read_isr(PIC2_COMMAND);
 }

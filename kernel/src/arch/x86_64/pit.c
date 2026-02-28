@@ -19,9 +19,6 @@ void PIT_sleep_ms(unsigned int ms) {
     uint64_t targetTicks = startTicks + ((uint64_t)ms * pit_hz) / 1000;
 
     while (pitInteruptsTriggered < targetTicks) {
-        serial_puthex(pitInteruptsTriggered);
-        serial_putchar('\n');
-
         uint64_t currentTicks = pitInteruptsTriggered;
 
         if (currentTicks < startTicks) {

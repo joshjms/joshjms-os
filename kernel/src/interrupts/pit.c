@@ -10,6 +10,4 @@ volatile uint64_t pitInteruptsTriggered = 0;
 void pit_isr(struct registers *regs) {
     (void) regs;
     pitInteruptsTriggered++;
-
-    log_println("PIT Interrupt");
 }
