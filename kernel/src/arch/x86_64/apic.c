@@ -25,6 +25,8 @@
 #define LAPIC_TIMER_MASKED   (1 << 16)
 #define LAPIC_TIMER_DIV16    0x3
 
+#define PIT_FREQUENCY 1193182
+
 static uintptr_t lapic_base_addr;
 static int x2apic_mode;
 static uint32_t lapic_ticks_per_ms;
@@ -56,9 +58,8 @@ uint32_t lapic_id(void) {
 }
 
 static void lapic_timer_calibrate(void) {
-    // Configure PIT channel 0: mode 0 (one-shot), 10ms countdown
-    uint16_t pit_count = 11931; // 1193182 Hz / 100 = ~10ms
-    outb(0x43, 0x30);           // ch0, lobyte/hibyte, mode 0
+    uint16_t pit_count = PIT_FREQUENCY / 100;
+    outb(0x43, 0x30);
     outb(0x40, pit_count & 0xFF);
     outb(0x40, (pit_count >> 8) & 0xFF);
 
