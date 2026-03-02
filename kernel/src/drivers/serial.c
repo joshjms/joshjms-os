@@ -14,32 +14,18 @@ void serial_init(void) {
     outb(COM1 + 4, 0x0B); // IRQs enabled, RTS/DSR set
 }
 
-static int serial_is_transmit_empty(void) {
+static int serial_ready(void) {
     return inb(COM1 + 5) & 0x20;
 }
 
-void serial_putchar(char c) {
-    while (serial_is_transmit_empty() == 0);
+void serial_putc(char c) {
+    while (serial_ready() == 0);
     outb(COM1, c);
 }
 
-void serial_puthex(uint64_t num) {
-    char buffer[17];
-    for (int i = 0; i < 16; i++) {
-        uint8_t digit = (num >> ((15 - i) * 4)) & 0xF;
-        buffer[i] = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
-    }
-    buffer[16] = '\0';
-    serial_print(buffer);
-}
-
-void serial_print(const char *str) {
+void serial_puts(const char *str) {
     while (*str) {
-        serial_putchar(*str++);
+        if(*str == '\n') serial_putc('\r');
+        serial_putc(*str++);
     }
-}
-
-void serial_println(const char *str) {
-    serial_print(str);
-    serial_putchar('\n');
 }

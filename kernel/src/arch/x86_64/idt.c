@@ -40,6 +40,7 @@ void IDT_set_descriptor(uint8_t vector, void* isr, uint8_t flags) {
 static bool vectors[256];
 
 extern void* isr_stub_table[];
+extern void isr_stub_255(void);
 
 void IDT_init() {
     idtr.base = (uintptr_t)&idt[0];
@@ -49,6 +50,8 @@ void IDT_init() {
         IDT_set_descriptor(i, isr_stub_table[i], 0x8E);
         vectors[i] = true;
     }
+
+    IDT_set_descriptor(255, (void*)isr_stub_255, 0x8E);
 
     __asm__ volatile ("lidt %0" : : "m"(idtr));
 }

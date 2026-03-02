@@ -3,5 +3,3 @@
 #include <interrupts/interrupts.h>
 
 void apic_timer_isr(struct registers *regs);
-
-void register_interrupt_handlers();

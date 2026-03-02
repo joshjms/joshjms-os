@@ -11,4 +11,6 @@ struct registers {
 
 void IRQ_register_handler(int irq, void (*handler)(struct registers *));
 
+void interrupt_handler(struct registers *regs);
+
 void exception_handler(struct registers *regs);

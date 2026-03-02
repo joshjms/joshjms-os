@@ -6,10 +6,10 @@
 #include <arch/x86_64/gdt.h>
 #include <arch/x86_64/idt.h>
 #include <arch/x86_64/pic.h>
-#include <arch/x86_64/pit.h>
+#include <arch/x86_64/apic.h>
 #include <interrupts/handlers.h>
-#include <lib/log.h>
 #include <drivers/serial.h>
+#include <printk.h>
 
 // Set the base revision to 5, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -45,6 +45,10 @@ static void hcf(void) {
     }
 }
 
+const int MAJOR = 0;
+const int MINOR = 1;
+const int PATCH = 0;
+
 // The following will be our kernel's entry point.
 // If renaming kmain() to something else, make sure to change the
 // linker script accordingly.
@@ -54,26 +58,32 @@ void kmain(void) {
         hcf();
     }
 
-    log_init();
+    serial_init();
+    printk("Serial initialized.\n");
 
     GDT_init();
-    log_info("GDT set up successfully!");
+    printk("GDT_init() done.\n");
 
     IDT_init();
-    log_info("IDT set up successfully!");
+    printk("IDT_init() done.\n");
 
     __asm__ volatile ("sti");
 
     PIC_init();
-    log_info("PIC set up successfully!");
+    printk("PIC_init() done.\n");
 
     register_interrupt_handlers();
 
-    PIT_init(100);
-    log_info("PIT set up successfully!");
-
     __asm__ volatile ("sti");
-    log_info("Interrupts enabled!");
+    printk("Enabled interrupts\n");
+
+    LAPIC_init(0xFEE00000);
+    printk("LAPIC_init() done.\n");
+
+    LAPIC_timer_init(0x20, 10);
+    printk("LAPIC timer set up at 100Hz!\n");
+
+    IRQ_mask(0);
 
     // Ensure we got a framebuffer.
     if (framebuffer_request.response == NULL
@@ -84,7 +94,7 @@ void kmain(void) {
     // Fetch the first framebuffer.
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
 
-    log_println("ppp");
+    printk("v%d.%d.%d\n", MAJOR, MINOR, PATCH);
 
     // We're done, just hang...
     hcf();
