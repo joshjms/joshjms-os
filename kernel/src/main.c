@@ -11,6 +11,7 @@
 #include <interrupts/handlers.h>
 #include <drivers/serial.h>
 #include <limine/requests.h>
+#include <mm/pmm.h>
 #include <printk.h>
 
 // Halt and catch fire function.
@@ -38,6 +39,9 @@ void kmain(void) {
 
     gdt_init();
     printk("gdt_init() done.\n");
+
+    pmm_init();
+    printk("pmm_init() done.\n");
 
     idt_init();
     printk("idt_init() done.\n");

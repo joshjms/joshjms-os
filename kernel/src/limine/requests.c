@@ -29,12 +29,15 @@ volatile struct limine_hhdm_request hhdm_request = {
 };
 
 __attribute__((used, section(".limine_requests")))
+volatile struct limine_memmap_request memmap_request = {
+    .id = LIMINE_MEMMAP_REQUEST_ID,
+    .revision = 0,
+};
+
+__attribute__((used, section(".limine_requests")))
 volatile struct limine_paging_mode_request paging_mode_request = {
     .id = LIMINE_PAGING_MODE_REQUEST_ID,
-    .revision = 3,
-    .mode = LIMINE_PAGING_MODE_X86_64_4LVL,
-    .max_mode = LIMINE_PAGING_MODE_X86_64_4LVL,
-    .min_mode = LIMINE_PAGING_MODE_X86_64_4LVL
+    .revision = 0,
 };
 
 // Finally, define the start and end markers for the Limine requests.
